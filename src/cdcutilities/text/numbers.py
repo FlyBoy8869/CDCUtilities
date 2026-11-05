@@ -1,43 +1,87 @@
 """Provides functions to format numbers in various ways."""
+import itertools as it
 
-def commafy_number(number: str, *, separator: str = ",") -> str:
-    """Separates a number into groups of three separated with separator.
 
-    :param number: The number to group with separators.
-    :param separator: The character to use as separator.
+def commafy_number(number: str) -> str:
+    """Adds commas to a number.
+
+    :param number: The number to add commas to.
     :rtype: str
-    :returns: String representation of number with separators inserted.
+    :returns: String representation of number with commas inserted.
+
+    >>> commafy_number("0")
+    '0'
+
+    >>> commafy_number("-0")
+    '-0'
+
+    >>> commafy_number("1")
+    '1'
+
+   >>> commafy_number("-1")
+   '-1'
 
     >>> commafy_number("123")
     '123'
 
+    >>> commafy_number("-123")
+    '-123'
+
     >>> commafy_number("1234")
     '1,234'
+
+    >>> commafy_number("-1234")
+    '-1,234'
+
+    >>> commafy_number("12345")
+    '12,345'
+
+    >>> commafy_number("-12345")
+    '-12,345'
 
     >>> commafy_number("1234567")
     '1,234,567'
 
-    >>> commafy_number("1234", separator="_")
-    '1_234'
+    >>> commafy_number("-1234567")
+    '-1,234,567'
 
     """
 
-    if "." in number:
-        whole_number, mantissa = number.split(".")
-        mantissa = f".{mantissa}"
-    else:
-        whole_number = number
-        mantissa = ""
+    import time
 
-    commafied_number = []
-    if leader := len(whole_number) % 3:
-        commafied_number.extend([whole_number[:leader], separator])
+    if not isinstance(number, str):
+        raise TypeError("The input must be a string.")
 
-    for i in range(leader, len(whole_number), 3):
-        segment = whole_number[i : i + 3]
-        commafied_number.extend([segment, separator])
-    commafied_number.pop()
+    try:
+        int(number)
+    except ValueError:
+        raise ValueError("The input can not be converted to a number.")
 
-    commafied_number_string = f"{"".join(commafied_number)}{mantissa}"
+    start_time = time.time()
+    if len(number) <= 3:
+        return number
 
-    return commafied_number_string
+    prefix = ""
+
+    if number[0] == "-":
+        number = number.replace("-", "")
+        prefix = "-"
+
+    if len(number) <= 3:
+        return prefix + number
+
+    s = ""
+    for i, c in enumerate(number[::-1]):
+        if i % 3 == 0 and i != 0:
+            s += f",{c}"
+        else:
+            s += c
+
+    print(f"elapsed time: {time.time() - start_time}")
+    return prefix + s[::-1]
+
+
+if __name__ == "__main__":
+    import sys
+
+    print(commafy_number(sys.argv[1]))
